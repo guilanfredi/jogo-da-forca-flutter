@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 
 import 'game.dart';
 
-class End extends StatefulWidget {
-  const End({super.key});
+class End extends StatelessWidget {
+  End({super.key, required this.venceu, required this.palavra});
 
-  @override
-  State<End> createState() => _EndState();
-}
+  final bool venceu;
+  final String palavra; 
 
-class _EndState extends State<End> {
+
   final AssetImage background = const AssetImage("images/background.png");
+
   final Text title = const Text("PARABÉNS", style: TextStyle(fontSize: 40, color: Colors.green));
+  final Text titlePerdeu = const Text("Não foi dessa vez", style: TextStyle(fontSize: 35, color: Colors.red));
+
   final Text frase = const Text("A PALAVRA ERA:", style: TextStyle(fontSize: 20, color: Colors.black));
 
   @override
@@ -33,7 +33,7 @@ class _EndState extends State<End> {
               children: [
                 Container(
                   margin: const EdgeInsets.only(top: 60),
-                  child: Center(child: title),
+                  child: Center(child: venceu ? title : titlePerdeu),
                 ),
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 96),
@@ -41,7 +41,7 @@ class _EndState extends State<End> {
                 ),
                 Container(
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-                  child: buildPalavra("Guilherme")
+                  child: buildPalavra(palavra)
                 ),
                 Center(
                   child: IconButton(
@@ -62,7 +62,7 @@ class _EndState extends State<End> {
       )
     );
   }
-
+  
   Widget buildPalavra(String palavra){
     final palavraCorrigida = palavra.trim().toUpperCase().characters;
     List<Widget> widgets = [];

@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Jogo da Velha',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
       routes: {
         "/": (context) => const HomeWiget(),
         "/game": (context) => const Game(),
-        "/end": (context) => const End(),
+        "/end": (context) => End(palavra: '',venceu: false),
       }
     );
   }

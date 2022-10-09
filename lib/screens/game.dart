@@ -1,4 +1,8 @@
+import 'dart:developer';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:jogo_da_forca_flutter/dao/PalavraDao.dart';
 
 import 'end.dart';
 
@@ -21,6 +25,18 @@ class _GameState extends State<Game> {
   final Image pernaDireita = const Image(image: AssetImage("images/perna-direita.png"));
   final Image xis = const Image(image: AssetImage("images/red-cross.png"));
 
+  String palavraAtual = "";
+  List<int> caracteresTestados = [];
+  int numeroDeErros = 0;
+
+  @override
+  void initState() {
+    super.initState();
+
+    escolhePalavra();
+    caracteresTestados = [];
+    numeroDeErros = 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,24 +55,36 @@ class _GameState extends State<Game> {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(top: 60),
-                    child: buildForca(4),
+                    child: buildForca(numeroDeErros),
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
-                    child: buildPalavra("Guilherme")
+                    child: buildPalavra(palavraAtual)
                   ),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 96),
-                    child: buildTeclado([65, 66, 68])
+                    child: buildTeclado()
                   ),
                 ]
               ),
             )
-            
           ],
         )
       )
     );
+  }
+
+  escolhePalavra() async {
+    PalavraDao dao = PalavraDao();
+
+    final result = await dao.readAll();
+    final random = Random();
+
+    var palavra = result[random.nextInt(result.length)];
+
+    setState(() {
+      palavraAtual = palavra.toUpperCase().trim();
+    });
   }
 
   Widget buildForca(int attempts){
@@ -68,16 +96,21 @@ class _GameState extends State<Game> {
   }
 
   Widget buildPalavra(String palavra){
-    final palavraCorrigida = palavra.trim().toUpperCase().characters;
     List<Widget> widgets = [];
 
-    for (var element in palavraCorrigida) {
+    for (var element in palavraAtual.characters) {
       widgets.add(
         Expanded(
           child: Column(
             children: [
+              caracteresTestados.contains(element.codeUnitAt(0)) ?
               Text(element,
                 style: const TextStyle(
+                  fontSize: 20,
+                )
+              ) :
+              const Text(' ',
+                style: TextStyle(
                   fontSize: 20,
                 )
               ),
@@ -93,7 +126,7 @@ class _GameState extends State<Game> {
     );
   }
 
-  Widget buildTeclado(List<int> letrasTestadas){
+  Widget buildTeclado(){
 
     List<Widget> buttons = [];
     //A = 65, Z = 90
@@ -109,16 +142,43 @@ class _GameState extends State<Game> {
                 minimumSize: const Size(42, 42),
                 padding: EdgeInsets.zero,
               ),
-              onPressed: letrasTestadas.contains(i) ? null : () => {
-                // ...
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const End()),
-                )
+              onPressed: caracteresTestados.contains(i) ? null : () => {
+                setState((){
+                  caracteresTestados.add(i);
+                  if (palavraAtual.contains(String.fromCharCode(i))){
+                    bool venceu = false;
+                    for (var element in palavraAtual.characters) {
+                      if (!caracteresTestados.contains(element.codeUnitAt(0))){
+                        venceu = false;
+                        break;
+                      }
+                      else {
+                        venceu = true;
+                      }
+                    }
+
+                    if(venceu) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => End(venceu: true, palavra: palavraAtual)),
+                      );
+                    }
+                  }
+                  else {
+                    numeroDeErros++;
+
+                    if (numeroDeErros > 5){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => End(venceu: false, palavra: palavraAtual)),
+                      );
+                    }
+                  }
+                })
               },
               child: Text(String.fromCharCode(i)),
             ),
-            letrasTestadas.contains(i) ?
+            caracteresTestados.contains(i) ?
               Container(
                 margin: const EdgeInsets.only(top: 4, left: 4),
                 child: xis,
