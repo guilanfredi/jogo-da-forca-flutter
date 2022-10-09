@@ -81,7 +81,7 @@ class PalavraDao {
     final result = List.generate(maps.length, (index) {
       return maps[index]['palavra'].toString();
     });
-    print(maps);
+    
     return result;
   }
 }
